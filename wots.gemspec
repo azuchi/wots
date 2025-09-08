@@ -4,7 +4,7 @@ require_relative "lib/wots/version"
 
 Gem::Specification.new do |spec|
   spec.name = "wots"
-  spec.version = Wots::VERSION
+  spec.version = WOTS::VERSION
   spec.authors = ["azuchi"]
   spec.email = ["azuchi@chaintope.com"]
 

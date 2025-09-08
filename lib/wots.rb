@@ -2,7 +2,7 @@
 
 require_relative "wots/version"
 
-module Wots
+module WOTS
   class Error < StandardError; end
   # Your code goes here...
 end
