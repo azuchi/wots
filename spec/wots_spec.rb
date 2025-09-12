@@ -1,7 +1,17 @@
 # frozen_string_literal: true
+require 'spec_helper'
 
 RSpec.describe WOTS do
-  it "has a version number" do
-    expect(WOTS::VERSION).not_to be nil
+
+  let(:param) { WOTS::Param::SHA256 }
+
+  describe 'generate public key' do
+    let(:vector) { load_fixture('key.json') }
+    it do
+      private_key = WOTS::PrivateKey.from_seed(param, vector['seed'])
+      public_key = WOTS::PublicKey.from_private_key(private_key, vector['pub_seed'])
+
+      expect(public_key.keys).to eq(vector['public_key'])
+    end
   end
 end

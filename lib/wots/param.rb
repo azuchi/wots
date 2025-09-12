@@ -31,36 +31,77 @@ module WOTS
       @len = opts[:len]
     end
 
+    def f(k, m)
+      keyed_hash(0, k, m)
+    end
+
+    def h(k, m)
+      keyed_hash(1, k, m)
+    end
+
+    def h_msg(k, m)
+      keyed_hash(2, k, m)
+    end
+
     # PRF function.
-    # @param [String] k
-    # @param [String] m
+    # @param [String] k key
+    # @param [String] m message
     # @return [String] Hex string.
     def prf(k, m)
-      case name
-      when 'wotsp-sha2_256'
-        Digest::SHA256.hexdigest(prf_prefix + hex_to_bin(k) + hex_to_bin(m))
-      when 'wotsp-sha512'
-        Digest::SHA512.hexdigest(prf_prefix + hex_to_bin(k) + hex_to_bin(m))
-      else
-        raise 'Unknown param'
+      keyed_hash(3, k, m)
+    end
+
+    # WOTS+ Chaining Function.
+    # @see https://datatracker.ietf.org/doc/html/rfc8391#autoid-16
+    # @param [String] x Input string.
+    # @param [Integer] start_idx Start index.
+    # @param [Integer] steps Number of steps.
+    # @param [String] seed Seed.
+    # @param [WOTS::Address] addr Address.
+    # @return [String] Result.
+    def chain(x, start_idx, steps, seed, addr)
+      return x if steps == 0
+      raise "Invalid range" if (start_idx + steps) > (w - 1)
+
+      result = x.dup
+
+      steps.times do |i|
+        addr.hash_addr = (start_idx + i)
+
+        addr.key_and_mask = 0
+        key = prf(seed, addr.to_payload)
+
+        addr.key_and_mask = 1
+        mask = prf(seed, addr.to_payload)
+
+        masked = xor_bytes(result, mask)
+        result = f(key, masked)
       end
+
+      result
     end
 
     private
+
+    def xor_bytes(a, b)
+      [a].pack('H*').unpack('C*').zip(
+        [b].pack('H*').unpack('C*')
+      ).map { |x, y| x ^ y }.pack("C*")
+    end
 
     def to_byte(value, length)
       (Array.new(length - 1, 0) + [value]).pack('C*')
     end
 
-    def prf_prefix
-      @_prf_prefxi ||= case name
-                       when 'wotsp-sha2_256', 'wotsp-shake_256'
-                         to_byte(3, 32)
-                       when 'wotsp-sha512', 'wotsp-shake_512'
-                         to_byte(3, 64)
-                       else
-                         raise 'Unknown param'
-                       end
+    def keyed_hash(prefix, k, m)
+      case name
+      when 'wotsp-sha2_256'
+        Digest::SHA256.hexdigest(to_byte(prefix, 32) + hex_to_bin(k) + hex_to_bin(m))
+      when 'wotsp-sha512'
+        Digest::SHA512.hexdigest(to_byte(prefix, 32) + hex_to_bin(k) + hex_to_bin(m))
+      else
+        raise 'Unknown param'
+      end
     end
   end
 end
