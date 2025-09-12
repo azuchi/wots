@@ -98,7 +98,7 @@ module WOTS
       when 'wotsp-sha2_256'
         Digest::SHA256.hexdigest(to_byte(prefix, 32) + hex_to_bin(k) + hex_to_bin(m))
       when 'wotsp-sha512'
-        Digest::SHA512.hexdigest(to_byte(prefix, 32) + hex_to_bin(k) + hex_to_bin(m))
+        Digest::SHA512.hexdigest(to_byte(prefix, 64) + hex_to_bin(k) + hex_to_bin(m))
       else
         raise 'Unknown param'
       end
