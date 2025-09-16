@@ -11,6 +11,7 @@ module WOTS
       raise ArgumentError, "The length of keys must be the same as param#len." unless keys.length == param.len
       keys.each do |key|
         raise ArgumentError, "key must be hex string." unless hex_string?(key)
+        raise ArgumentError, "key must be #{param.n} bytes." unless hex_to_bin(key).bytesize == param.n
       end
 
       @param = param
