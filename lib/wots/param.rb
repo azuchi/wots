@@ -12,7 +12,6 @@ module WOTS
     attr_reader :name
     attr_reader :n
     attr_reader :w
-    attr_reader :len
 
     # @param [Hash] opts
     # @option opts [Integer] :n the message length as well as the length of a private key,
@@ -23,12 +22,22 @@ module WOTS
       raise ArgumentError, 'name must be string.' unless opts[:name].is_a?(String)
       raise ArgumentError, 'n must be integer.' unless opts[:n].is_a?(Integer)
       raise ArgumentError, 'w must be integer.' unless opts[:w].is_a?(Integer)
-      raise ArgumentError, 'len must be integer.' unless opts[:len].is_a?(Integer)
 
       @name = opts[:name]
       @n = opts[:n]
       @w = opts[:w]
-      @len = opts[:len]
+    end
+
+    def len1
+      @len1 ||= (8.0 * n / Math.log2(w)).ceil
+    end
+
+    def len2
+      @len2 ||= (Math.log2(len1 * (w - 1)) / Math.log2(w)).floor + 1
+    end
+
+    def len
+      @len ||= len1 + len2
     end
 
     def f(k, m)

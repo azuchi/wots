@@ -3,8 +3,7 @@ module WOTS
     SHAKE256 = new(
       name: 'wotsp-shake_256',
       n: 32,
-      w: 16,
-      len: 67
+      w: 16
     )
   end
 end
