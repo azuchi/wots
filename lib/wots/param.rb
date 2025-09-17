@@ -60,6 +60,33 @@ module WOTS
       keyed_hash(3, k, m)
     end
 
+    # Convert data as base w representation.
+    # @param [String] data The data to be converted.
+    # @return [Array] An array of integer.
+    def base_w(data)
+      x = hex_to_bin(data)
+
+      basew = []
+      in_idx = 0
+      total = 0
+      bits = 0
+      lg_w = Math.log2(w).to_i  # lg(w): 4→2, 16→4, 256→8
+
+      len1.times do
+        if bits == 0
+          break if in_idx >= x.bytesize
+          total = x.getbyte(in_idx)
+          in_idx += 1
+          bits += 8
+        end
+
+        bits -= lg_w
+        basew << ((total >> bits) & (w - 1))
+      end
+
+      basew
+    end
+
     # WOTS+ Chaining Function.
     # @see https://datatracker.ietf.org/doc/html/rfc8391#autoid-16
     # @param [String] x Input string.
@@ -90,16 +117,27 @@ module WOTS
       result
     end
 
+    # Convert +value+ to +length+ size binary string.
+    # @param [Integer] value
+    # @param [Integer] length
+    # @return [String]
+    def to_byte(value, length)
+      bytes = []
+
+      length.times do
+        bytes.unshift(value & 0xFF)
+        value >>= 8
+      end
+
+      bytes.pack("C*")
+    end
+
     private
 
     def xor_bytes(a, b)
       [a].pack('H*').unpack('C*').zip(
         [b].pack('H*').unpack('C*')
       ).map { |x, y| x ^ y }.pack("C*")
-    end
-
-    def to_byte(value, length)
-      (Array.new(length - 1, 0) + [value]).pack('C*')
     end
 
     def keyed_hash(prefix, k, m)

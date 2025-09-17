@@ -1,4 +1,5 @@
 module WOTS
+  # WOTS+ public key.
   class PublicKey
     include Util
     extend Util
