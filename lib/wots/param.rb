@@ -87,6 +87,19 @@ module WOTS
       basew
     end
 
+    # Compute checksum for +base_w+.
+    # @param [Array] base_w
+    # @return [String] Checksum binary string.
+    def compute_checksum(base_w)
+      c_sum = 0
+      len1.times do |i|
+        c_sum = (c_sum + w - 1 - base_w[i])
+      end
+      c_sum = (c_sum << (8 - ((len2 * Math.log2(w).to_i) % 8)))
+      len_2_bytes = ((len2 * Math.log2(w).to_i) / 8.0).ceil
+      to_byte(c_sum, len_2_bytes)
+    end
+
     # WOTS+ Chaining Function.
     # @see https://datatracker.ietf.org/doc/html/rfc8391#autoid-16
     # @param [String] x Input string.
@@ -117,6 +130,19 @@ module WOTS
       result
     end
 
+    def ==(other)
+      return false unless other.is_a?(Param)
+      name == other.name && n == other.n && w == other.w
+    end
+
+    private
+
+    def xor_bytes(a, b)
+      [a].pack('H*').unpack('C*').zip(
+        [b].pack('H*').unpack('C*')
+      ).map { |x, y| x ^ y }.pack("C*")
+    end
+
     # Convert +value+ to +length+ size binary string.
     # @param [Integer] value
     # @param [Integer] length
@@ -130,14 +156,6 @@ module WOTS
       end
 
       bytes.pack("C*")
-    end
-
-    private
-
-    def xor_bytes(a, b)
-      [a].pack('H*').unpack('C*').zip(
-        [b].pack('H*').unpack('C*')
-      ).map { |x, y| x ^ y }.pack("C*")
     end
 
     def keyed_hash(prefix, k, m)

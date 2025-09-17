@@ -42,8 +42,8 @@ module WOTS
     # @return [WOTS::Signature]
     # @raise ArgumentError
     def sign(pub_seed, message)
-      raise ArgumentError, "pub_seed must be string." unless pub_seed.is_a?(String)
-      raise ArgumentError, "pub_seed must be #{param.n} bytes.." unless hex_to_bin(pub_seed).bytesize == param.n
+      raise ArgumentError, 'pub_seed must be hex string.' unless hex_string?(pub_seed)
+      raise ArgumentError, "pub_seed must be #{param.n} bytes." unless hex_to_bin(pub_seed).bytesize == param.n
       raise ArgumentError, "message must be string." unless message.is_a?(String)
       raise ArgumentError, "message must be #{param.n} bytes." unless hex_to_bin(message).bytesize == param.n
 
@@ -53,13 +53,9 @@ module WOTS
       base_w = param.base_w(message)
 
       # Compute checksum
-      c_sum = 0
-      param.len1.times do |i|
-        c_sum = (c_sum + param.w - 1 - base_w[i])
-      end
-      c_sum = (c_sum << (8 - ((param.len2 * Math.log2(param.w).to_i) % 8)))
-      len_2_bytes = ((param.len2 * Math.log2(param.w).to_i) / 8.0).ceil
-      base_w = base_w + param.base_w(param.to_byte(c_sum, len_2_bytes))
+      c_sum = param.compute_checksum(base_w)
+
+      base_w = base_w + param.base_w(c_sum)
 
       sigs = param.len.times.map do |i|
         addr.chain_addr = i

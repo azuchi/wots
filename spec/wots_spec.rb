@@ -15,6 +15,9 @@ RSpec.describe WOTS do
       message = vector['message']
       signature = private_key.sign(vector['pub_seed'], message)
       expect(signature.sigs).to eq(vector['signature'])
+
+      pubkey_from_sig = WOTS::PublicKey.from_signature(signature, vector['pub_seed'], message)
+      expect(pubkey_from_sig).to eq(public_key)
     end
   end
 end

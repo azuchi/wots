@@ -24,8 +24,9 @@ module WOTS
     # @param [String] pub_seed
     def self.from_private_key(private_key, pub_seed)
       raise ArgumentError, 'private_key must be WOTS::PrivateKey.' unless private_key.is_a?(WOTS::PrivateKey)
-      raise ArgumentError, 'pub_seed must be hex string.' unless hex_string?(pub_seed)
       param = private_key.param
+      raise ArgumentError, 'pub_seed must be hex string.' unless hex_string?(pub_seed)
+      raise ArgumentError, "pub_seed must be #{param.n} bytes." unless hex_to_bin(pub_seed).bytesize == param.n
       addr = WOTS::Address.new
       keys = param.len.times.map do |i|
         addr.chain_addr = i
@@ -33,6 +34,38 @@ module WOTS
         param.chain(sk, 0, param.w - 1, pub_seed, addr)
       end
       PublicKey.new(private_key.param, keys)
+    end
+
+    # Generate public key from +signature+.
+    # @param [WOTS::Signature] signature
+    # @param [String] pub_seed
+    # @param [String] message
+    # @return [WOTS::PublicKey]
+    # @raise ArgumentError
+    def self.from_signature(signature, pub_seed, message)
+      param = signature.param
+      raise ArgumentError, 'pub_seed must be hex string.' unless hex_string?(pub_seed)
+      raise ArgumentError, "pub_seed must be #{param.n} bytes." unless hex_to_bin(pub_seed).bytesize == param.n
+      raise ArgumentError, "message must be string." unless message.is_a?(String)
+      raise ArgumentError, "message must be #{param.n} bytes." unless hex_to_bin(message).bytesize == param.n
+
+      base_w = param.base_w(message)
+      c_sum = param.compute_checksum(base_w)
+      base_w = base_w + param.base_w(c_sum)
+
+      addr = WOTS::Address.new
+
+      keys = param.len.times.map do |i|
+        addr.chain_addr = i
+        param.chain(signature.sigs[i], base_w[i], param.w - 1 - base_w[i], pub_seed, addr)
+      end
+
+      PublicKey.new(param, keys)
+    end
+
+    def ==(other)
+      return false unless other.is_a?(PublicKey)
+      param == other.param && keys == other.keys
     end
   end
 end
