@@ -8,8 +8,8 @@ module WOTS
     attr_reader :keys
 
     def initialize(param, keys)
-      raise ArgumentError "param must be WOTS::Param." unless param.is_a?(WOTS::Param)
-      raise ArgumentError "keys must be Array." unless keys.is_a?(Array)
+      raise ArgumentError, "param must be WOTS::Param." unless param.is_a?(WOTS::Param)
+      raise ArgumentError, "keys must be Array." unless keys.is_a?(Array)
       raise ArgumentError, "The length of keys must be the same as param#len." unless keys.length == param.len
       keys.each do |key|
         raise ArgumentError, "key must be hex string." unless hex_string?(key)

@@ -1,3 +1,5 @@
+require 'openssl'
+
 module WOTS
   # WOTS+ parameters defined in rfc8391.
   # https://datatracker.ietf.org/doc/html/rfc8391
@@ -7,7 +9,6 @@ module WOTS
     autoload :SHA256, 'wots/param/sha256'
     autoload :SHA512, 'wots/param/sha512'
     autoload :SHAKE256, 'wots/param/shake256'
-    autoload :SHAKE512, 'wots/param/shake512'
 
     attr_reader :name
     attr_reader :n
@@ -160,11 +161,14 @@ module WOTS
     end
 
     def keyed_hash(prefix, k, m)
+      payload = to_byte(prefix, n) + hex_to_bin(k) + hex_to_bin(m)
       case name
-      when 'wotsp-sha2_256'
-        Digest::SHA256.hexdigest(to_byte(prefix, 32) + hex_to_bin(k) + hex_to_bin(m))
-      when 'wotsp-sha512'
-        Digest::SHA512.hexdigest(to_byte(prefix, 64) + hex_to_bin(k) + hex_to_bin(m))
+      when 'WOTSP-SHA2_256'
+        Digest::SHA256.hexdigest(payload)
+      when 'WOTSP-SHA2_512'
+        Digest::SHA512.hexdigest(payload)
+      when 'WOTSP-SHAKE_256'
+        OpenSSL::Digest.new('shake256', payload).hexdigest
       else
         raise 'Unknown param'
       end

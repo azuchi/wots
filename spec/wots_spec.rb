@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
+require 'securerandom'
+require 'digest'
 
 RSpec.describe WOTS do
 
@@ -36,6 +38,24 @@ RSpec.describe WOTS do
 
         expect(signature.sigs).to eq(expect_signature)
 
+        pubkey_from_sig = WOTS::PublicKey.from_signature(signature, pub_seed, message)
+        expect(pubkey_from_sig).to eq(public_key)
+      end
+    end
+  end
+
+  describe 'All params' do
+    let(:params) { [ WOTS::Param::SHA256, WOTS::Param::SHA512, WOTS::Param::SHAKE256 ] }
+    it do
+      params.each do |param|
+        seed = SecureRandom.hex(param.n)
+        pub_seed = SecureRandom.hex(param.n)
+        message = SecureRandom.hex(param.n)
+
+        private_key = WOTS::PrivateKey.from_seed(param, seed)
+        public_key = WOTS::PublicKey.from_private_key(private_key, pub_seed)
+
+        signature = private_key.sign(pub_seed, message)
         pubkey_from_sig = WOTS::PublicKey.from_signature(signature, pub_seed, message)
         expect(pubkey_from_sig).to eq(public_key)
       end
