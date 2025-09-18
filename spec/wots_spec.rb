@@ -54,8 +54,10 @@ RSpec.describe WOTS do
 
         private_key = WOTS::PrivateKey.from_seed(param, seed)
         public_key = WOTS::PublicKey.from_private_key(private_key, pub_seed)
+        expect([public_key.keys.join].pack('H*').bytesize).to eq(param.n * param.len)
 
         signature = private_key.sign(pub_seed, message)
+        expect([signature.sigs.join].pack('H*').bytesize).to eq(param.n * param.len)
         pubkey_from_sig = WOTS::PublicKey.from_signature(signature, pub_seed, message)
         expect(pubkey_from_sig).to eq(public_key)
       end
