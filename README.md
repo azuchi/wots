@@ -70,14 +70,11 @@ param = WOTS::Param::SHA512
 
 # SHAKE-256 based (n=32 bytes, w=16)
 param = WOTS::Param::SHAKE256
-
-# Custom parameters (for w=4, etc.)
-param = WOTS::Param.new(name: 'WOTSP-SHA2_256', n: 32, w: 4)
 ```
 
 ## Security Considerations
 
-**⚠️ IMPORTANT: This is a cryptographic library implementation. While it follows RFC 8391 specifications,
+**⚠️ IMPORTANT: This is a cryptograFixphic library implementation. While it follows RFC 8391 specifications,
 it has not undergone formal security audits. Use at your own risk in production environments.**
 
 WOTS+ is a **one-time signature scheme**. Each private key should only be used to sign **one message**.

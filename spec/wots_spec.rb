@@ -14,8 +14,8 @@ RSpec.describe WOTS do
 
       params = [
         WOTS::Param::SHA256,
-        WOTS::Param.new(name: 'wotsp-sha2_256', n: 32, w: 4),
-        WOTS::Param.new(name: 'wotsp-sha2_256', n: 32, w: 256)
+        WOTS::Param.new(name: 'WOTSP-SHA2_256', n: 32, w: 4),
+        WOTS::Param.new(name: 'WOTSP-SHA2_256', n: 32, w: 256)
       ]
 
       params.each do |param|
