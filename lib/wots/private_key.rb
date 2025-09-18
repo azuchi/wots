@@ -27,10 +27,9 @@ module WOTS
       raise ArgumentError "param must be WOTS::Param." unless param.is_a?(WOTS::Param)
       raise ArgumentError "seed must be String." unless seed.is_a?(String)
       raise ArgumentError "len parameter too large." if param.len.bit_length > 16
-      ctr = Array.new(30, 0).pack('C*')
 
       keys = param.len.times.map do |i|
-        param.prf(seed, ctr + [i].pack('n'))
+        param.prf(seed, param.to_byte(i, 32))
       end
 
       PrivateKey.new(param, keys)
@@ -50,12 +49,12 @@ module WOTS
       addr = Address.new
 
       # Convert message to base w
-      base_w = param.base_w(message)
+      base_w = param.base_w(message, param.len1)
 
       # Compute checksum
       c_sum = param.compute_checksum(base_w)
 
-      base_w = base_w + param.base_w(c_sum)
+      base_w = base_w + param.base_w(c_sum, param.len2)
 
       sigs = param.len.times.map do |i|
         addr.chain_addr = i

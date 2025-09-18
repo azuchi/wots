@@ -49,9 +49,9 @@ module WOTS
       raise ArgumentError, "message must be string." unless message.is_a?(String)
       raise ArgumentError, "message must be #{param.n} bytes." unless hex_to_bin(message).bytesize == param.n
 
-      base_w = param.base_w(message)
+      base_w = param.base_w(message, param.len1)
       c_sum = param.compute_checksum(base_w)
-      base_w = base_w + param.base_w(c_sum)
+      base_w = base_w + param.base_w(c_sum, param.len2)
 
       addr = WOTS::Address.new
 

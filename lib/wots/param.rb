@@ -62,17 +62,18 @@ module WOTS
 
     # Convert data as base w representation.
     # @param [String] data The data to be converted.
+    # @param [Integer] out_len Output length.
     # @return [Array] An array of integer.
-    def base_w(data)
+    def base_w(data, out_len)
       x = hex_to_bin(data)
 
       basew = []
       in_idx = 0
       total = 0
       bits = 0
-      lg_w = Math.log2(w).to_i  # lg(w): 4→2, 16→4, 256→8
+      lg_w = Math.log2(w).to_i
 
-      len1.times do
+      out_len.times do
         if bits == 0
           break if in_idx >= x.bytesize
           total = x.getbyte(in_idx)
@@ -135,14 +136,6 @@ module WOTS
       name == other.name && n == other.n && w == other.w
     end
 
-    private
-
-    def xor_bytes(a, b)
-      [a].pack('H*').unpack('C*').zip(
-        [b].pack('H*').unpack('C*')
-      ).map { |x, y| x ^ y }.pack("C*")
-    end
-
     # Convert +value+ to +length+ size binary string.
     # @param [Integer] value
     # @param [Integer] length
@@ -156,6 +149,14 @@ module WOTS
       end
 
       bytes.pack("C*")
+    end
+
+    private
+
+    def xor_bytes(a, b)
+      [a].pack('H*').unpack('C*').zip(
+        [b].pack('H*').unpack('C*')
+      ).map { |x, y| x ^ y }.pack("C*")
     end
 
     def keyed_hash(prefix, k, m)
